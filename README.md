@@ -56,39 +56,23 @@ The result is a system that is easy to reason about, test, and extend.
 Project Structure
 -----------------
 ```
-data_ingestion/
+astro-loader/
 
-├── ingest.py
+├── main.py
 
 ├── config/
 
-│   ├── base.yaml
-
-│   ├── local.yaml
-
-│   ├── dev.yaml
+│   ├── config.yaml
 
 ├── src/
 
-│   ├── readers/
-
-│   ├── validation/
-
-│   ├── transform/
-
-│   ├── dedup/
-
 │   ├── db/
 
-│   ├── logging/
+│   ├── ingestion/
 
-│   └── models/
+│   └── utils/
 
 ├── tests/
-
-│   ├── unit/
-
-│   └── integration/
 
 ├── .env.example
 
@@ -121,19 +105,6 @@ ENV=local
 
 An example is provided in .env.example.
 
-Configuration
--------------
-
-Configuration is environment-aware and layered:
-
-* config/base.yaml – shared defaults
-* config/local.yaml – local overrides
-* config/dev.yaml – development overrides
-
-**Precedence order:**
-
-` Environment Variables > Environment YAML > Base YAML `
-
 
 How to Run
 ----------
@@ -143,10 +114,9 @@ How to Run
 
 ### Run Ingestion
 ```
-python ingest.py 
+python main.py 
   --source meteorites
-  --file data/meteorite_landings.csv
-  --env local
+  --file data/raw/Meteorite_Landings.csv
 ```
 The command will:
 
