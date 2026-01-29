@@ -1,2 +1,57 @@
-# Configuration for data ingestion sources and database connection
-# Enables easy onboarding of new sources without code changes
+# Application Configuration
+app:
+  name: astro-loader
+  environment: dev
+  log_level: INFO
+
+# Data Source Configuration
+source:
+  name: meteorite_landings
+  file_type: csv
+  file_path: /mnt/data/Meteorite_Landings.csv
+  encoding: utf-8
+
+
+# Validation Rules
+validation:
+  required_columns:
+    - id
+    - name
+    - mass
+    - year
+    - reclat
+    - reclong
+
+  data_types:
+    id: int
+    name: str
+    mass: float
+    year: str
+    reclat: float
+    reclong: float
+
+  allow_nulls:
+    mass: false
+    year: true
+    reclat: true
+    reclong: true
+
+# Transformation Rules
+transformation:
+  normalize_column_names: true
+  trim_strings: true
+  fill_missing:
+    mass: 0.0
+
+
+# Deduplication Rules
+deduplication:
+  enabled: true
+  keys:
+    - id
+
+# Database Target Tables
+database:
+  staging_table: stg_meteorite_landings
+  reject_table: stg_rejects
+  batch_size: 500
