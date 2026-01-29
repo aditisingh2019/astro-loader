@@ -1,14 +1,22 @@
 """
-PostgreSQL connection management.
+Purpose:
+--------
+Manage PostgreSQL database connections for the ingestion pipeline.
 
 Responsibilities:
-- Create and manage database connections.
-- Read connection parameters from environment variables.
-- Provide safe connection lifecycle handling.
+-----------------
+- Create and return database connections.
+- Handle connection configuration securely.
+- Ensure connections are properly closed after use.
 
 Important Behavior:
-- Connections must be explicitly closed after use.
-- Connection creation should be isolated from business logic.
-- Fail fast if required credentials are missing.
-- Should support future connection pooling if needed.
+-------------------
+- Uses parameterized queries to prevent SQL injection.
+- Does not contain business logic.
+- Raises connection-level errors clearly and early.
+
+Design Notes:
+-------------
+- Designed to be reusable across loaders.
+- Compatible with AWS RDS PostgreSQL.
 """

@@ -1,0 +1,2 @@
+# Configuration for data ingestion sources and database connection
+# Enables easy onboarding of new sources without code changes
