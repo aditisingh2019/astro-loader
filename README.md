@@ -6,24 +6,41 @@ Overview
 
 This project implements a Python-based **Data Ingestion Subsystem** designed to reliably ingest structured data from CSV and JSON files into PostgreSQL. The system validates, cleans, deduplicates, and loads data into staging tables while capturing invalid records for review.
 
-The design prioritizes **clarity, correctness, and extensibility** over premature optimization, making it suitable as a foundational ingestion layer for analytics or downstream processing.
+The design prioritizes **clarity, correctness, and extensibility** making it suitable as a foundational ingestion layer for analytics or downstream processing.
 
 Architecture & Data Flow
 ------------------------
 
 ### High-Level Data Flow
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML` Source File (CSV / JSON)          │          ▼  Source Reader          │          ▼  Schema Validation          │          ├──► Rejects (invalid records + reason)          │          ▼  Data Cleaning & Standardization          │          ▼  Deduplication          │          ▼  PostgreSQL Staging Table (stg_) `
-
+```
+Source File (CSV / JSON)
+ │
+ ▼
+Source Reader
+ │
+ ▼
+Schema Validation
+ │
+ ├──► Rejects (invalid records + reason)
+ │
+ ▼
+Data Cleaning & Standardization
+ │
+ ▼
+Deduplication
+ │
+ ▼
+PostgreSQL Staging Table (stg_<dataset>)
+```
 ### Flow Explanation
 
-1. **Source Reading**Input files (CSV or JSON) are read using source-specific readers that stream records to avoid loading entire files into memory.
+1. **Source Reading**: Input files (CSV or JSON) are read using source-specific readers that stream records to avoid loading entire files into memory.
 2. Records that fail validation are **not dropped silently**; they are written to a dedicated reject table with detailed failure reasons.
     * A structural schema (required fields, types)  
     * Business rules (domain-specific correctness)
-3. **Cleaning & Transformation**Valid records are standardized (e.g., date formats, casing, default values) to ensure consistency for downstream analytics.
-4. **Deduplication**Duplicate records are removed using a deterministic strategy (natural key or record hash) to support idempotent ingestion.
-5. **Loading**Clean, deduplicated records are loaded into PostgreSQL staging tables. Invalid records are loaded into a reject table for auditing and debugging.
+3. **Cleaning & Transformation**: Valid records are standardized (e.g., date formats, casing, default values) to ensure consistency for downstream analytics.
+4. **Deduplication**: Duplicate records are removed using a deterministic strategy (natural key or record hash) to support idempotent ingestion.
+5. **Loading**: Clean, deduplicated records are loaded into PostgreSQL staging tables. Invalid records are loaded into a reject table for auditing and debugging.
 
 Why This Structure
 ------------------
@@ -38,8 +55,47 @@ The result is a system that is easy to reason about, test, and extend.
 
 Project Structure
 -----------------
+```
+data_ingestion/
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML` data_ingestion/  ├── ingest.py  ├── config/  │   ├── base.yaml  │   ├── local.yaml  │   ├── dev.yaml  ├── src/  │   ├── readers/  │   ├── validation/  │   ├── transform/  │   ├── dedup/  │   ├── db/  │   ├── logging/  │   └── models/  ├── tests/  │   ├── unit/  │   └── integration/  ├── .env.example  ├── requirements.txt  └── README.md `
+├── ingest.py
+
+├── config/
+
+│   ├── base.yaml
+
+│   ├── local.yaml
+
+│   ├── dev.yaml
+
+├── src/
+
+│   ├── readers/
+
+│   ├── validation/
+
+│   ├── transform/
+
+│   ├── dedup/
+
+│   ├── db/
+
+│   ├── logging/
+
+│   └── models/
+
+├── tests/
+
+│   ├── unit/
+
+│   └── integration/
+
+├── .env.example
+
+├── requirements.txt
+
+└── README.md
+```
 
 Setup
 -----
@@ -47,14 +103,21 @@ Setup
 ### Prerequisites
 
 * Python 3.9+
-* PostgreSQL (local or AWS RDS)
+* PostgreSQL (AWS)
 * pip / virtualenv
 
 ### Environment Variables
 
-Create a .env file (not committed to version control):
+Create a .env file in root folder:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML` DB_HOST=localhost  DB_PORT=5432  DB_NAME=ingestion  DB_USER=postgres  DB_PASSWORD=your_password  ENV=local `
+```
+DB_HOST=localhost  
+DB_PORT=5432  
+DB_NAME=ingestion  
+DB_USER=postgres  
+DB_PASSWORD=your_password  
+ENV=local
+```
 
 An example is provided in .env.example.
 
@@ -69,21 +132,22 @@ Configuration is environment-aware and layered:
 
 **Precedence order:**
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML` Environment Variables > Environment YAML > Base YAML `
+` Environment Variables > Environment YAML > Base YAML `
 
-Secrets are **never** stored in YAML files.
 
 How to Run
 ----------
 
 ### Install Dependencies
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML` pip install -r requirements.txt `
+` pip install -r requirements.txt `
 
 ### Run Ingestion
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML` python ingest.py \    --source meteorites \    --file data/meteorite_landings.csv \    --env local `
-
+```
+python ingest.py 
+  --source meteorites
+  --file data/meteorite_landings.csv
+  --env local
+```
 The command will:
 
 * Ingest the file
@@ -117,17 +181,17 @@ Design Decisions & Trade-offs
 
 These trade-offs are intentional given the project scope.
 
-Scaling Considerations (Without Overengineering)
+Scaling Considerations
 ------------------------------------------------
 
 This system is designed for small to medium batch ingestion. If ingestion volume increased to **~100GB/day**, the following changes would be made:
 
 ### What Would Change at 100GB/day?
 
-* **Chunked Reads**Process data in fixed-size chunks to control memory usage.
-* **Bulk Loads (COPY)**Replace row-level INSERT statements with PostgreSQL COPY for higher throughput.
-* **S3 as a Source**Read files directly from S3 instead of local disk.
-* **Workflow Orchestration**Schedule and monitor ingestion using Airflow or a similar orchestrator.
+* **Chunked Reads**: Process data in fixed-size chunks to control memory usage.
+* **Bulk Loads (COPY)**: Replace row-level INSERT statements with PostgreSQL COPY for higher throughput.
+* **S3 as a Source**: Read files directly from S3 instead of local disk.
+* **Workflow Orchestration**: Schedule and monitor ingestion using Airflow or a similar orchestrator.
 
 Importantly, the current architecture already supports these changes without major refactoring.
 
