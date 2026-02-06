@@ -20,3 +20,16 @@ Design Notes:
 - Supports single or composite keys.
 - Designed for performance on medium-sized datasets.
 """
+import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
+
+def deduplicate(df : pd.DataFrame):
+
+    # Create copy of duplcates for saving to log
+    duplicates_df = df[df.duplicated()].copy
+
+    # Drop the dupliated rows from the dataframe
+    deduplicated_df = df.drop_duplicates()
+    return deduplicated_df

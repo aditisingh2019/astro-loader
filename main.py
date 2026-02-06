@@ -19,3 +19,10 @@ Design Notes:
 -------------
 - Keeps runtime concerns separate from pipeline logic.
 """
+
+import logging
+from src.utils import logger
+
+# Initialize logging
+logger.setup_logging()
+log = logging.getLogger(__name__)

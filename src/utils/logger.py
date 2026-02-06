@@ -20,3 +20,16 @@ Design Notes:
 - Uses Python's built-in logging library.
 - Designed to be easily extended for cloud logging (CloudWatch, Datadog).
 """
+
+import logging
+import yaml
+import logging.config
+
+def setup_logging(config_file="config/config.yaml"):
+
+    with open(config_file, 'rt') as file:
+        try:
+            config = yaml.safe_load(file.read())
+            logging.config.dictConfig(config["logging"])
+        except Exception:
+            logging.basicConfig(level=logging.INFO)
