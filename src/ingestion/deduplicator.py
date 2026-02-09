@@ -25,10 +25,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def deduplicate(df : pd.DataFrame):
+def deduplicate(df : pd.DataFrame) -> pd.DataFrame:
 
     # Create copy of duplcates for saving to log
-    duplicates_df = df[df.duplicated()].copy
+    duplicates_df = df[df.duplicated()]
+
+    # Make log record of number of duplicates in file
+    logger.info(f"There were {duplicates_df.size} duplicate logs.")
 
     # Drop the dupliated rows from the dataframe
     deduplicated_df = df.drop_duplicates()

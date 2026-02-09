@@ -55,31 +55,3 @@ database:
   staging_table: stg_meteorite_landings
   reject_table: stg_rejects
   batch_size: 500
-
-
-logging:
-  version: 1
-  disable_existing_loggers: False
-  formatters:
-    standard_format:
-      format: '%(asctime)s | %(levelname)s | %(module)s | %(lineno)s | %(message)s'
-    json_format:
-      class: pythonjsonlogger.jsonlogger.JsonFormatter
-      format: '%(asctime)s %(levelname)s %(module)s %(lineno)s %(message)s'
-
-  handlers:
-    console:
-      class: logging.StreamHandler
-      level: INFO
-      formatter: standard_format
-      stream: ext://sys.stdout
-    error_log:
-      class: logging.FileHandler
-      level: INFO
-      formatter: json_format
-      filename: logs/astro-loader.log
-      mode : 'a'
-  
-  root:
-    handlers: [console, error_log]
-    level: INFO

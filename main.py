@@ -23,6 +23,5 @@ Design Notes:
 import logging
 from src.utils import logger
 
-# Initialize logging
-logger.setup_logging()
-log = logging.getLogger(__name__)
+# Call loggging setup function
+logger = logger.setup_logger()

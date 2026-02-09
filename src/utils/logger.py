@@ -22,14 +22,44 @@ Design Notes:
 """
 
 import logging
-import yaml
-import logging.config
+from pythonjsonlogger import jsonlogger
+from queue import Queue
+from src.utils.db_log_handler import DatabaseLogHandler
+from src.db import connection
 
-def setup_logging(config_file="config/config.yaml"):
+def setup_logger():
 
-    with open(config_file, 'rt') as file:
-        try:
-            config = yaml.safe_load(file.read())
-            logging.config.dictConfig(config["logging"])
-        except Exception:
-            logging.basicConfig(level=logging.INFO)
+    # Create logging instance.
+    logger = logging.getLogger()
+
+    # Check if logger has handlers to avoid creating multiple.
+    if logger.handlers:
+        return logger
+    logger.setLevel(logging.INFO)
+
+    #engine = connection.get_engine()
+
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_format = logging.Formatter("%(asctime)s | %(levelname)s | %(module)s | %(lineno)s | %(message)s")
+    console_handler.setFormatter(console_format)
+    logger.addHandler(console_handler)
+
+    # File handler
+    file_handler = logging.FileHandler("logs/astro-loader.log")
+    file_handler.setLevel(logging.INFO)
+    file_format = '%(asctime)s %(levelname)s %(module)s %(lineno)s %(message)s'
+    json_file_format = jsonlogger.JsonFormatter(file_format)
+    file_handler.setFormatter(json_file_format)
+    logger.addHandler(file_handler)
+    '''
+    # Database log handler
+    queue = Queue(-1)
+    queue_handler = logging.handlers.QueueHandler(queue)
+    db_handler = DatabaseLogHandler(engine)
+    queue_listener = logging.handlers.QueueListener(queue, db_handler)
+    queue_listener.start()
+    logger.addHandler(queue_handler)
+    '''
+    return logger
