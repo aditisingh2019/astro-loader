@@ -22,6 +22,13 @@ Design Notes:
 
 import logging
 from src.utils import logger
+from src.ingestion.pipeline import run_pipeline
 
-# Call loggging setup function
-logger = logger.setup_logger()
+def main():
+
+    # Call loggging setup function
+    log = logger.setup_logger()
+
+
+if __name__=="__main__":
+    main()

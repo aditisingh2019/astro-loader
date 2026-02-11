@@ -22,8 +22,10 @@ Design Notes:
 """
 
 import logging
-from pythonjsonlogger import jsonlogger
+from logging import handlers
+import atexit
 from queue import Queue
+from pythonjsonlogger import jsonlogger
 from src.utils.db_log_handler import DatabaseLogHandler
 from src.db import connection
 
@@ -37,7 +39,7 @@ def setup_logger():
         return logger
     logger.setLevel(logging.INFO)
 
-    #engine = connection.get_engine()
+    engine = connection.get_engine()
 
     # Console handler
     console_handler = logging.StreamHandler()
@@ -53,13 +55,22 @@ def setup_logger():
     json_file_format = jsonlogger.JsonFormatter(file_format)
     file_handler.setFormatter(json_file_format)
     logger.addHandler(file_handler)
-    '''
-    # Database log handler
-    queue = Queue(-1)
+ 
+    # Create queue and quehandler for database log inserts
+    queue = Queue(maxsize=1000)
     queue_handler = logging.handlers.QueueHandler(queue)
-    db_handler = DatabaseLogHandler(engine)
-    queue_listener = logging.handlers.QueueListener(queue, db_handler)
-    queue_listener.start()
+    queue_handler.setLevel(logging.INFO)
     logger.addHandler(queue_handler)
-    '''
+
+    # Database log handler
+    db_handler = DatabaseLogHandler(engine)
+    db_handler.setLevel(logging.INFO)
+    db_handler.setFormatter(file_format)
+
+    queue_listener = logging.handlers.QueueListener(queue, db_handler, respect_handler_level=True)
+    queue_listener.start()
+
+    # Stop queue listener when application ends
+    atexit.register(queue_listener.stop)
+    
     return logger

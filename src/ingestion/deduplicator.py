@@ -31,7 +31,8 @@ def deduplicate(df : pd.DataFrame) -> pd.DataFrame:
     duplicates_df = df[df.duplicated()]
 
     # Make log record of number of duplicates in file
-    logger.info(f"There were {duplicates_df.size} duplicate logs.")
+    if duplicates_df.shape[0] > 0:
+        logger.info(f"There were {duplicates_df.shape[0]} duplicate records.")
 
     # Drop the dupliated rows from the dataframe
     deduplicated_df = df.drop_duplicates()

@@ -22,21 +22,21 @@ Design Notes:
 """
 
 import os
-import pandas as pd
 import logging
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 PATH_EXTENSIONS = [".csv", ".json"]
 
-def read_file(filename : str) -> pd.DataFrame:
+def read_file(filename : str, chunksize: int):
 
     # Check if file exists
     if not os.path.exists(filename):
         raise FileNotFoundError("File not found")
     
     # Obtain the file extension
-    extension = os.path.splitext(filename)[1]
+    extension = os.path.splitext(filename)[1].lower()
 
     # Check if file extension is defined in opening functions
     if extension not in PATH_EXTENSIONS:
@@ -44,13 +44,9 @@ def read_file(filename : str) -> pd.DataFrame:
     
     try:
         if extension == '.csv':
-            df = pd.read_csv(filename)
-            return df
-        elif extension == '.json':
-            df = pd.read_json(filename)
-            return df
-        else:
-            logger.error("An unknown error has occurred")
+            return pd.read_csv(filename, chunksize=chunksize)
+        if extension == '.json':
+            return pd.read_json(filename, lines=True, chunksize=chunksize)
 
     except Exception:
         logger.error("Failed to load data into dataframe")
