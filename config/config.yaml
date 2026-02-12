@@ -8,7 +8,7 @@ app:
 source:
   name: meteorite_landings
   file_type: csv
-  file_path: /mnt/data/Meteorite_Landings.csv
+  file_path: /mnt/data/raw/Meteorite_Landings.csv
   encoding: utf-8
 
 
@@ -17,10 +17,6 @@ validation:
   required_columns:
     - id
     - name
-    - mass
-    - year
-    - reclat
-    - reclong
 
   data_types:
     id: int
