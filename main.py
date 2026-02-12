@@ -26,7 +26,7 @@ from src.ingestion.pipeline import run_pipeline
 
 def main():
 
-    # Call loggging setup function
+    # Call logging setup function for intializtion
     log = logger.setup_logger()
 
 

@@ -16,7 +16,7 @@ Important Behavior:
 
 Design Notes:
 -------------
-- 
+- Simplified for handling both error log and data ingestion log.
 """
 
 import logging
