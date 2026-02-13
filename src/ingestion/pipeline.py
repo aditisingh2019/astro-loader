@@ -27,7 +27,6 @@ import logging
 import time
 from typing import Optional
 
-from src.utils.logger import setup_logger
 from src.db.connection import get_engine
 from src.db.tables import metadata
 from src.ingestion.reader import read_file
@@ -37,6 +36,7 @@ from src.ingestion.deduplicator import deduplicate
 from src.ingestion.loader import load_data
 from src.db.tables import stg_rides_table, stg_rejects_table
 
+logger = logging.getLogger(__name__)
 
 # Pipeline Entry Point. Execute full ingestion pipeline.
 def run_pipeline(
@@ -44,7 +44,6 @@ def run_pipeline(
     chunksize: int = 10000
 ) -> None:
 
-    logger = setup_logger()
     start_time = time.time()
 
     logger.info(f"Starting ingestion pipeline for file: {filename}")

@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 PATH_EXTENSIONS = [".csv", ".json"]
 
-def read_file(filename : str, chunksize: int):
+def read_file(filename : str, chunksize: int) -> pd.DataFrame:
 
     # Check if file exists
     if not os.path.exists(filename):
@@ -48,5 +48,6 @@ def read_file(filename : str, chunksize: int):
         if extension == '.json':
             return pd.read_json(filename, lines=True, chunksize=chunksize)
 
-    except Exception:
+    except Exception as e:
         logger.error("Failed to load data into dataframe")
+        raise

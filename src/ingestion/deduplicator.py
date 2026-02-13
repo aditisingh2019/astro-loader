@@ -20,20 +20,27 @@ Design Notes:
 - Supports single or composite keys.
 - Designed for performance on medium-sized datasets.
 """
+
 import pandas as pd
 import logging
 
 logger = logging.getLogger(__name__)
 
-def deduplicate(df : pd.DataFrame) -> pd.DataFrame:
+def deduplicate(df : pd.DataFrame, viewed_records : set) -> pd.DataFrame:
 
-    # Create copy of duplcates for saving to log
-    duplicates_df = df[df.duplicated()]
+    # Remove the duplicate records from current chunk
+    df = df[~df.duplicated(keep='first')]
 
-    # Make log record of number of duplicates in file
-    if duplicates_df.shape[0] > 0:
-        logger.info(f"There were {duplicates_df.shape[0]} duplicate records.")
+    # Convert dataframe rows to tuples
+    row_tuples = df.apply(tuple, axis=1)
 
-    # Drop the dupliated rows from the dataframe
-    deduplicated_df = df.drop_duplicates()
-    return deduplicated_df
+    # Mask for comparing previously viewed chunks to current chunk
+    mask = []
+    for row in row_tuples:
+        if row in viewed_records:
+            mask.append(False)
+        else:
+            viewed_records.add(row)
+            mask.append(True)
+
+    return df[mask], viewed_records

@@ -49,12 +49,12 @@ def setup_logger():
     logger.addHandler(console_handler)
 
     # File handler
-    file_handler = logging.FileHandler("logs/astro-loader.log")
-    file_handler.setLevel(logging.INFO)
+    # file_handler = logging.FileHandler("logs/astro-loader.log")
+    # file_handler.setLevel(logging.INFO)
     file_format = '%(asctime)s %(levelname)s %(module)s %(lineno)s %(message)s'
-    json_file_format = jsonlogger.JsonFormatter(file_format)
-    file_handler.setFormatter(json_file_format)
-    logger.addHandler(file_handler)
+    # json_file_format = jsonlogger.JsonFormatter(file_format)
+    # file_handler.setFormatter(json_file_format)
+    # logger.addHandler(file_handler)
  
     # Create queue and quehandler for database log inserts
     queue = Queue(maxsize=1000)
