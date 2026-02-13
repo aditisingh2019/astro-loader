@@ -28,19 +28,13 @@ logger = logging.getLogger(__name__)
 
 def deduplicate(df : pd.DataFrame, viewed_records : set) -> pd.DataFrame:
 
-    # Remove the duplicate records from current chunk
-    df = df[~df.duplicated(keep='first')]
+    # Remove the duplicate records from current chunk, based on the unique booking id
+    df = df[~df.duplicated(subset=['booking_id'], keep='first')]
 
-    # Convert dataframe rows to tuples
-    row_tuples = df.apply(tuple, axis=1)
+    # Check previous records for duplicates 
+    mask = ~df['booking_id'].isin(viewed_records)
 
-    # Mask for comparing previously viewed chunks to current chunk
-    mask = []
-    for row in row_tuples:
-        if row in viewed_records:
-            mask.append(False)
-        else:
-            viewed_records.add(row)
-            mask.append(True)
+    # Update the viewed records with current chunk
+    viewed_records.update(df.loc[mask, 'booking_id'])
 
-    return df[mask], viewed_records
+    return df.loc[mask]

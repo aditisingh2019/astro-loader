@@ -30,6 +30,7 @@ engine = get_engine()
 error_log_table = Table("error_log", metadata, autoload_with=engine)
 data_log_table = Table("data_log", metadata, autoload_with=engine)
 
+stg_rides_table = Table("stg_rides", metadata, autoload_with=engine)
 stg_rejects_table = Table("stg_rejects", metadata, autoload_with=engine)
 
 stg_bookings_table = Table("stg_bookings", metadata, autoload_with=engine)

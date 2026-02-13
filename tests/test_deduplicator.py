@@ -4,6 +4,8 @@ import pandas as pd
 from src.ingestion import deduplicator
 from pandas.testing import assert_frame_equal
 
+empty_set = set()
+
 mock_data_with_duplicates = pd.DataFrame({
     'id' : [1, 2, 3, 4, 2, 5, 3],
     'name' : ['Gamma', 'Beta', 'Omega', 'Lambda', 'Beta', 'Epsilon', 'Omega'],
@@ -19,7 +21,7 @@ def test_deduplicator_success():
     df = pd.DataFrame(mock_data_with_duplicates)
     df.drop_duplicates(inplace=True)
 
-    result_df = deduplicator.deduplicate(mock_data_with_duplicates)
+    result_df = deduplicator.deduplicate(mock_data_with_duplicates, empty_set)
 
     assert result_df.shape == df.shape
 
@@ -28,7 +30,8 @@ def test_deduplicator_log_with_record_success(caplog):
     df = pd.DataFrame(mock_data_with_duplicates)
 
     caplog.set_level(logging.INFO)
-    deduplicator.deduplicate(df)
+    deduplicator.deduplicate(df, empty_set)
+
     assert "There were 2 duplicate records." in caplog.text
 
 def test_deduplicator_log_no_record_success(caplog):
@@ -36,7 +39,7 @@ def test_deduplicator_log_no_record_success(caplog):
     df = pd.DataFrame(mock_data_without_duplicates)
 
     caplog.set_level(logging.INFO)
-    deduplicator.deduplicate(df)
+    deduplicator.deduplicate(df, empty_set)
     
     assert caplog.text == ""
     
