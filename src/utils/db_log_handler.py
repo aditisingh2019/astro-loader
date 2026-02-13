@@ -21,6 +21,7 @@ Design Notes:
 
 import logging
 from sqlalchemy import insert
+from datetime import datetime
 from src.db.tables import error_log_table, data_log_table
 
 class DatabaseLogHandler(logging.Handler):
@@ -35,7 +36,7 @@ class DatabaseLogHandler(logging.Handler):
 
         try:
             row = {
-                "asctime" : record.created,
+                "asctime" : datetime.fromtimestamp(record.created),
                 "levelname" : record.levelname,
                 "module" : record.module,
                 "lineno" : record.lineno,

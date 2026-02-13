@@ -25,7 +25,6 @@ import logging
 from logging import handlers
 import atexit
 from queue import Queue
-from pythonjsonlogger import jsonlogger
 from src.utils.db_log_handler import DatabaseLogHandler
 from src.db import connection
 
@@ -48,13 +47,8 @@ def setup_logger():
     console_handler.setFormatter(console_format)
     logger.addHandler(console_handler)
 
-    # File handler
-    # file_handler = logging.FileHandler("logs/astro-loader.log")
-    # file_handler.setLevel(logging.INFO)
-    file_format = '%(asctime)s %(levelname)s %(module)s %(lineno)s %(message)s'
-    # json_file_format = jsonlogger.JsonFormatter(file_format)
-    # file_handler.setFormatter(json_file_format)
-    # logger.addHandler(file_handler)
+    # Format for database logging
+    db_format = '%(asctime)s %(levelname)s %(module)s %(lineno)s %(message)s'
  
     # Create queue and quehandler for database log inserts
     queue = Queue(maxsize=1000)
@@ -65,7 +59,7 @@ def setup_logger():
     # Database log handler
     db_handler = DatabaseLogHandler(engine)
     db_handler.setLevel(logging.INFO)
-    db_handler.setFormatter(file_format)
+    db_handler.setFormatter(db_format)
 
     queue_listener = logging.handlers.QueueListener(queue, db_handler, respect_handler_level=True)
     queue_listener.start()
