@@ -31,10 +31,7 @@ from typing import Dict
 logger = logging.getLogger(__name__)
 
 
-# -------------------------------------------------------------------
 # Column Normalization
-# -------------------------------------------------------------------
-
 COLUMN_RENAME_MAP: Dict[str, str] = {
     "Booking ID": "booking_id",
     "Customer ID": "customer_id",
@@ -58,7 +55,6 @@ COLUMN_RENAME_MAP: Dict[str, str] = {
 
 
 # Apply deterministic, reversible cleaning transformations.
-
 def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     
 

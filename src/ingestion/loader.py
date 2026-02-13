@@ -34,7 +34,6 @@ logger = logging.getLogger(__name__)
 
 
 # Load valid and rejected records into database.
-
 def load_data(
     engine: Engine,
     valid_df: pd.DataFrame,
@@ -102,7 +101,6 @@ def _batch_insert(
         connection.execute(stmt, batch)
 
 # Convert rejected dataframe into schema expected by reject table.
-
 def _prepare_reject_records(reject_df: pd.DataFrame) -> pd.DataFrame:
     logger.info("Preparing rejected records for reject table.")
 

@@ -55,6 +55,7 @@ def run_pipeline(
     total_valid = 0
     total_rejected = 0
     total_deduped = 0
+    viewed_records = set()
 
     try:
         reader = read_file(filename, chunksize)
@@ -69,11 +70,11 @@ def run_pipeline(
 
             total_rejected += len(reject_df)
 
-            # Step 2: Cleaning
+            # Cleaning
             cleaned_valid_df = clean_dataframe(valid_df)
 
             # Deduplication
-            deduped_df = deduplicate(cleaned_valid_df)
+            deduped_df = deduplicate(cleaned_valid_df, viewed_records)
 
             deduped_count = len(cleaned_valid_df) - len(deduped_df)
             total_deduped += deduped_count

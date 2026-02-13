@@ -31,7 +31,6 @@ logger = logging.getLogger(__name__)
 
 
 # Validation Configuration
-
 VALIDATION_CONFIG: Dict[str, Any] = {
     "required_columns": [
         "Booking ID",
@@ -56,7 +55,6 @@ VALIDATION_CONFIG: Dict[str, Any] = {
 
 
 # Validate dataframe and split into valid and rejected records.
-
 def validate_dataframe(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     logger.info("Starting validation process.")
