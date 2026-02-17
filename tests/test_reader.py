@@ -14,6 +14,7 @@ def mock_dataframe():
 def chunk_size():
     return 2
 
+# Read csv file
 def test_read_csv_file_success(tmp_path, mock_dataframe, chunk_size):
     # Create a temporary file path name
     csv_file_path = tmp_path / "test_data.csv"
@@ -31,6 +32,7 @@ def test_read_csv_file_success(tmp_path, mock_dataframe, chunk_size):
     # Assert the results
     assert result_df.equals(mock_dataframe)
 
+# Test file not found error
 def test_read_file_filenotfounderror_success(chunk_size):
 
     with pytest.raises(Exception) as e:
@@ -38,6 +40,7 @@ def test_read_file_filenotfounderror_success(chunk_size):
 
     assert str(e.value) == "File not found"
 
+# Test file extension error
 def test_read_file_extension_error_success(tmp_path, mock_dataframe, chunk_size):
     # Create a temporary file path name
     csv_file_path = tmp_path / "test_data.xxx"

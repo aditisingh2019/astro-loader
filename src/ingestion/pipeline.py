@@ -89,7 +89,10 @@ def run_pipeline(
                 staging_table=stg_rides_table,
                 reject_table=stg_rejects_table
             )
-            call_procedure()
+
+            # Transfer uploaded data from staging table to actual tables
+            call_procedure(engine=engine)
+
             logger.info(
                 f"Chunk {chunk_number} complete | "
                 f"Valid: {len(deduped_df)} | "

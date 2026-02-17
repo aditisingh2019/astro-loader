@@ -5,44 +5,41 @@ Call a database procedure.
 
 Responsibilities:
 -----------------
-- 
-- 
-- 
+- Execute a procedure in the database.
+- Handles different procedures with or without parameters.
 
 Important Behavior:
 -------------------
-- 
-- 
-- 
+- Can specify a default procedure call.
+- Accepts procedure name as string and parameters in a dictionary.
 
 Design Notes:
 -------------
-- 
+- The default procedure call is currently specific to the Uber dataset.
 
 """
 
 import logging
-from sqlalchemy import text
-from src.db.connection import get_engine
+from sqlalchemy import text, Engine
 
 logger = logging.getLogger(__name__)
 
-def call_procedure(procecure_name : str=None, proceure_params : dict=None):
-
-    engine = get_engine()
+def call_procedure(engine: Engine, procedure_name : str=None, procedure_params : dict=None):
 
     try:
-        with engine.connect() as connection:
+        with engine.begin() as connection:
 
-            if procecure_name is None:
+            if procedure_name is None:
                 connection.execute(text("CALL transfer_uber_data();"))
-                connection.commit()
             else:
-                parameters = {}
-                parameters = ", ".join(f":{key}" for key in proceure_params.keys())
-                query = f"CALL {procecure_name}(:parameters);"
-                connection.exececute(text(procecure_name), proceure_params)
-                connection.commit()
+                if procedure_params:
+                    parameters = {}
+                    parameters = ", ".join(f":{key}" for key in procedure_params.keys())
+                    query = f"CALL {procedure_name}({parameters});"
+                    connection.execute(text(query), procedure_params)
+                else:
+                    query = f"CALL {procedure_name}();"
+                    connection.execute(text(query))
 
         logger.info("Database procedure was called successfully")
 
