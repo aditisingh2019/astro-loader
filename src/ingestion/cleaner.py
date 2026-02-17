@@ -44,8 +44,11 @@ COLUMN_RENAME_MAP: Dict[str, str] = {
     "Driver Ratings": "driver_rating",
     "Customer Rating": "customer_rating",
     "Cancelled Rides by Customer": "cancelled_by_customer",
+    "Reason for cancelling by Customer": "cancellation_reason_by_customer",
     "Cancelled Rides by Driver": "cancelled_by_driver",
+    "Driver Cancellation Reason": "cancellation_reason_by_driver",
     "Incomplete Rides": "incomplete_ride",
+    "Incomplete Rides Reason": "incomplete_ride_reason",
     "Avg VTAT": "avg_vtat",
     "Avg CTAT": "avg_ctat",
     "Payment Method": "payment_method",
@@ -181,6 +184,9 @@ def _standardize_categoricals(df: pd.DataFrame) -> pd.DataFrame:
         "drop_location",
         "booking_status",
         "payment_method",
+        "cancellation_reason_by_customer",
+        "cancellation_reason_by_driver",
+        "incomplete_ride_reason"
     ]
 
     for col in categorical_columns:

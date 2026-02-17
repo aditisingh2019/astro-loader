@@ -26,15 +26,23 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def deduplicate(df : pd.DataFrame, viewed_records : set) -> pd.DataFrame:
+def deduplicate(df : pd.DataFrame, viewed_records : set, subset : list=None) -> pd.DataFrame:
 
-    # Remove the duplicate records from current chunk, based on the unique booking id
-    df = df[~df.duplicated(subset=['booking_id'], keep='first')]
+    if subset is None:
+        # Remove the duplicate records from current chunk, based on the unique booking id
+        df = df[~df.duplicated(subset=['booking_id'], keep='first')]
 
-    # Check previous records for duplicates 
-    mask = ~df['booking_id'].isin(viewed_records)
+        # Check previous records for duplicates 
+        mask = ~df['booking_id'].isin(viewed_records)
 
-    # Update the viewed records with current chunk
-    viewed_records.update(df.loc[mask, 'booking_id'])
+        # Update the viewed records with current chunk
+        viewed_records.update(df.loc[mask, 'booking_id'])
+        
+    else:
+        df = df[~df.duplicated(subset=subset, keep='first')]
+
+        mask = ~df[subset].isin(viewed_records)
+
+        viewed_records.update(df.loc[mask, subset])
 
     return df.loc[mask]

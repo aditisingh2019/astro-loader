@@ -24,11 +24,15 @@ Design Notes:
 import logging
 from logging import handlers
 import atexit
+import os
+from dotenv import load_dotenv
 from queue import Queue
 from src.utils.db_log_handler import DatabaseLogHandler
 from src.db import connection
 
 def setup_logger():
+    
+    load_dotenv()
 
     # Create logging instance.
     logger = logging.getLogger()
@@ -61,10 +65,21 @@ def setup_logger():
     db_handler.setLevel(logging.INFO)
     db_handler.setFormatter(db_format)
 
+    # Email log handler
+    smtp_handler = handlers.SMTPHandler(mailhost=(os.getenv("EMAIL_HOST"), int(os.getenv("EMAIL_PORT"))),
+                                        fromaddr=os.getenv("EMAIL_ADDRESS"),
+                                        toaddrs=[os.getenv("EMAIL_RECIPIENT")],
+                                        subject="Data ingestion log update",
+                                        credentials=(os.getenv("EMAIL_ADDRESS"), os.getenv("EMAIL_PASSWORD")),
+                                        secure=())
+    smtp_handler.setLevel(logging.CRITICAL)
+    smtp_handler.setFormatter(console_format)
+    logger.addHandler(smtp_handler)
+
     queue_listener = logging.handlers.QueueListener(queue, db_handler, respect_handler_level=True)
     queue_listener.start()
 
     # Stop queue listener when application ends
     atexit.register(queue_listener.stop)
-    
+
     return logger
