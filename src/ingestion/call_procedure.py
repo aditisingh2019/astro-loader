@@ -20,29 +20,21 @@ Design Notes:
 """
 
 import logging
+from pathlib import Path
 from sqlalchemy import text, Engine
+from src.db.connection import get_engine, execute_sql_file
 
 logger = logging.getLogger(__name__)
 
-def call_procedure(engine: Engine, procedure_name : str=None, procedure_params : dict=None):
+def call_procedure(engine=None) -> None:
 
-    try:
-        with engine.begin() as connection:
+    if engine is None:
+        engine = get_engine()
 
-            if procedure_name is None:
-                connection.execute(text("CALL transfer_uber_data();"))
-            else:
-                if procedure_params:
-                    parameters = {}
-                    parameters = ", ".join(f":{key}" for key in procedure_params.keys())
-                    query = f"CALL {procedure_name}({parameters});"
-                    connection.execute(text(query), procedure_params)
-                else:
-                    query = f"CALL {procedure_name}();"
-                    connection.execute(text(query))
+    sql_path = Path(__file__).parents[2] / "sql" / "procedures" / "transfer_stage_to_core.sql"
 
-        logger.info("Database procedure was called successfully")
+    # Ensure procedure is deployed
+    execute_sql_file(engine, sql_path)
 
-    except Exception as e:
-        logger.error("Failed to execute database procedure ")
-        raise
+    with engine.begin() as conn:
+        conn.execute(text("CALL transfer_stage_to_core();"))

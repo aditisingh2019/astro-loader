@@ -1,0 +1,21 @@
+repo/
+├── sql/
+│   └── procedures/
+│   │   └── transfer_stage_to_core.sql 
+│   └── schema/
+│   │   ├── core.sql
+│   │   └── staging.sql
+├── src/
+│   └── ingestion/
+│   │   ├── call_procedure.py 
+│   │   ├── cleaner.py
+│   │   ├── deduplicator.py
+│   │   ├── loader.py
+│   │   ├── pipeline.py
+│   │   ├── reader.py
+│   │   └── validator.py
+│   └── db/
+│   │   ├── connection.py
+│   │   ├── tables.py
+│   │   ├── models.sql
+│   │   └── transfer_stage_to_core.sql

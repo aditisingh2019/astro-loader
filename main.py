@@ -25,9 +25,12 @@ from __future__ import annotations
 import sys
 import argparse
 import logging
+from src.db.connection import setup_database
+setup_database()
 
 from src.utils.logger import setup_logger
 from src.ingestion.pipeline import run_pipeline
+
 
 
 # Exit codes
@@ -57,7 +60,9 @@ def parse_args() -> argparse.Namespace:
 
 # Application entry point. Initializes logging, loads configuration, and triggers pipeline execution.
 def main() -> int:
+    
     logger = setup_logger()
+    
 
     try:
         args = parse_args()

@@ -90,9 +90,6 @@ def run_pipeline(
                 reject_table=stg_rejects_table
             )
 
-            # Transfer uploaded data from staging table to actual tables
-            call_procedure(engine=engine)
-
             logger.info(
                 f"Chunk {chunk_number} complete | "
                 f"Valid: {len(deduped_df)} | "
@@ -100,6 +97,10 @@ def run_pipeline(
                 f"Deduplicated: {deduped_count}"
             )
 
+        
+        # Transfer uploaded data from staging table to actual tables
+        call_procedure(engine=engine)
+        logger.info("All chunks processed. Calling transfer procedure.")
         runtime = round(time.time() - start_time, 2)
 
         logger.info(
@@ -110,6 +111,7 @@ def run_pipeline(
             f"Total deduplicated: {total_deduped} | "
             f"Runtime: {runtime}s"
         )
+        
 
     except Exception as e:
         logger.exception("Pipeline execution failed.")

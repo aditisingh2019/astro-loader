@@ -33,10 +33,20 @@ data_log_table = Table("data_log", metadata, autoload_with=engine)
 stg_rides_table = Table("stg_rides", metadata, autoload_with=engine)
 stg_rejects_table = Table("stg_rejects", metadata, autoload_with=engine)
 
-bookings_table = Table("bookings", metadata, autoload_with=engine)
+'''
 booking_status_table = Table("booking_status", metadata, autoload_with=engine)
 vehicle_types_table = Table("vehicle_types", metadata, autoload_with=engine)
 locations_table = Table("locations", metadata, autoload_with=engine)
+payment_methods_table = Table("payment_methods", metadata, autoload_with=engine)
+cancellation_reasons_table = Table("cancellation_reasons", metadata, autoload_with=engine)
+incomplete_reasons_table = Table("incomplete_reasons", metadata, autoload_with=engine)
+
 customers_table = Table("customers", metadata, autoload_with=engine)
-cancellations_table = Table("cancellations", metadata, autoload_with=engine)
+drivers_table = Table("drivers", metadata, autoload_with=engine)
+
+bookings_table = Table("bookings", metadata, autoload_with=engine)
+
+customer_cancellations_table = Table("customer_cancellations", metadata, autoload_with=engine)
+driver_cancellations_table = Table("driver_cancellations", metadata, autoload_with=engine)
 incomplete_rides_table = Table("incomplete_rides", metadata, autoload_with=engine)
+'''

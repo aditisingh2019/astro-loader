@@ -25,9 +25,9 @@ from __future__ import annotations
 
 import logging
 import json
+from matplotlib import table
 import pandas as pd
-from typing import Optional
-from sqlalchemy import insert
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.engine import Engine
 
 logger = logging.getLogger(__name__)
@@ -94,7 +94,6 @@ def _batch_insert(
     # Perform batch inserts using SQLAlchemy Core.
 
     records = df.to_dict(orient="records")
-
     for i in range(0, len(records), batch_size):
         batch = records[i:i + batch_size]
         stmt = insert(table)

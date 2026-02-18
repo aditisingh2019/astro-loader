@@ -155,12 +155,14 @@ def _convert_datetime(df: pd.DataFrame) -> pd.DataFrame:
     if "ride_date" in df.columns:
         df["ride_date"] = pd.to_datetime(
             df["ride_date"],
+            format="%Y-%m-%d",
             errors="coerce"
         ).dt.date
 
     if "ride_time" in df.columns:
         df["ride_time"] = pd.to_datetime(
             df["ride_time"],
+            format="%H:%M:%S",
             errors="coerce"
         ).dt.time
 

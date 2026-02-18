@@ -66,15 +66,21 @@ def setup_logger():
     db_handler.setFormatter(db_format)
 
     # Email log handler
-    smtp_handler = handlers.SMTPHandler(mailhost=(os.getenv("EMAIL_HOST"), int(os.getenv("EMAIL_PORT"))),
-                                        fromaddr=os.getenv("EMAIL_ADDRESS"),
-                                        toaddrs=[os.getenv("EMAIL_RECIPIENT")],
-                                        subject="Data ingestion log update",
-                                        credentials=(os.getenv("EMAIL_ADDRESS"), os.getenv("EMAIL_PASSWORD")),
-                                        secure=())
-    smtp_handler.setLevel(logging.CRITICAL)
-    smtp_handler.setFormatter(console_format)
-    logger.addHandler(smtp_handler)
+    email_host = os.getenv("EMAIL_HOST")
+    email_port = os.getenv("EMAIL_PORT")
+
+    if email_host and email_port: 
+        smtp_handler = handlers.SMTPHandler(
+            mailhost=(email_host, int(email_port)),
+            fromaddr=os.getenv("EMAIL_ADDRESS"),
+            toaddrs=[os.getenv("EMAIL_RECIPIENT")],
+            subject="Data ingestion log update",
+            credentials=(os.getenv("EMAIL_ADDRESS"), os.getenv("EMAIL_PASSWORD")),
+            secure=()
+        )
+        smtp_handler.setLevel(logging.CRITICAL)
+        smtp_handler.setFormatter(console_format)
+        logger.addHandler(smtp_handler)
 
     queue_listener = logging.handlers.QueueListener(queue, db_handler, respect_handler_level=True)
     queue_listener.start()
