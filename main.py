@@ -30,7 +30,7 @@ setup_database()
 
 from src.utils.logger import setup_logger
 from src.ingestion.pipeline import run_pipeline
-
+from src.db.connection import get_engine
 
 
 # Exit codes
@@ -61,7 +61,9 @@ def parse_args() -> argparse.Namespace:
 # Application entry point. Initializes logging, loads configuration, and triggers pipeline execution.
 def main() -> int:
     
-    logger = setup_logger()
+    engine = get_engine()
+
+    logger = setup_logger(engine)
     
 
     try:
@@ -73,7 +75,8 @@ def main() -> int:
 
         run_pipeline(
             filename=args.file,
-            chunksize=args.chunksize
+            chunksize=args.chunksize,
+            engine=engine
         )
 
         logger.info("Ingestion completed successfully.")

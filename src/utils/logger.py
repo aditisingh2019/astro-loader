@@ -28,9 +28,9 @@ import os
 from dotenv import load_dotenv
 from queue import Queue
 from src.utils.db_log_handler import DatabaseLogHandler
-from src.db import connection
+from sqlalchemy.engine import Engine
 
-def setup_logger():
+def setup_logger(engine: Engine):
     
     load_dotenv()
 
@@ -41,8 +41,6 @@ def setup_logger():
     if logger.handlers:
         return logger
     logger.setLevel(logging.INFO)
-
-    engine = connection.get_engine()
 
     # Console handler
     console_handler = logging.StreamHandler()

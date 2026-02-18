@@ -36,13 +36,15 @@ from src.ingestion.deduplicator import deduplicate
 from src.ingestion.loader import load_data
 from src.ingestion.call_procedure import call_procedure
 from src.db.tables import stg_rides_table, stg_rejects_table
+from sqlalchemy.engine import Engine
 
 logger = logging.getLogger(__name__)
 
 # Pipeline Entry Point. Execute full ingestion pipeline.
 def run_pipeline(
     filename: str,
-    chunksize: int = 10000
+    chunksize: int = 10000,
+    engine= Engine
 ) -> None:
 
     start_time = time.time()
@@ -112,6 +114,8 @@ def run_pipeline(
             f"Runtime: {runtime}s"
         )
         
+        # Testing the SMTPHandler
+        logger.critical("Test for SMTPHandler.")
 
     except Exception as e:
         logger.exception("Pipeline execution failed.")

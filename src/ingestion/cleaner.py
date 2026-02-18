@@ -52,8 +52,8 @@ COLUMN_RENAME_MAP: Dict[str, str] = {
     "Avg VTAT": "avg_vtat",
     "Avg CTAT": "avg_ctat",
     "Payment Method": "payment_method",
-    "Date": "ride_date",
-    "Time": "ride_time"
+    "Date": "booking_date",
+    "Time": "booking_time"
 }
 
 
@@ -152,25 +152,25 @@ def _convert_binary_flags(df: pd.DataFrame) -> pd.DataFrame:
 def _convert_datetime(df: pd.DataFrame) -> pd.DataFrame:
     logger.info("Converting date and time columns.")
 
-    if "ride_date" in df.columns:
-        df["ride_date"] = pd.to_datetime(
-            df["ride_date"],
+    if "booking_date" in df.columns:
+        df["booking_date"] = pd.to_datetime(
+            df["booking_date"],
             format="%Y-%m-%d",
             errors="coerce"
         ).dt.date
 
-    if "ride_time" in df.columns:
-        df["ride_time"] = pd.to_datetime(
-            df["ride_time"],
+    if "booking_time" in df.columns:
+        df["booking_time"] = pd.to_datetime(
+            df["booking_time"],
             format="%H:%M:%S",
             errors="coerce"
         ).dt.time
 
     # Create combined timestamp
-    if "ride_date" in df.columns and "ride_time" in df.columns:
+    if "booking_date" in df.columns and "booking_time" in df.columns:
         logger.info("Creating ride_timestamp column.")
         df["ride_timestamp"] = pd.to_datetime(
-            df["ride_date"].astype(str) + " " + df["ride_time"].astype(str),
+            df["booking_date"].astype(str) + " " + df["booking_time"].astype(str),
             errors="coerce"
         )
 
