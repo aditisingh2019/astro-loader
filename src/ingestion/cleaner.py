@@ -89,7 +89,7 @@ def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 def _strip_whitespace(df: pd.DataFrame) -> pd.DataFrame:
     logger.info("Stripping leading/trailing whitespace from string columns.")
-    str_cols = df.select_dtypes(include="object").columns
+    str_cols = df.select_dtypes(include=["object", "string"]).columns
 
     for col in str_cols:
         df[col] = df[col].astype(str).str.strip()

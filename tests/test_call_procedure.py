@@ -1,61 +1,53 @@
 import pytest
-import pandas as pd
+from unittest.mock import patch, MagicMock
+from pathlib import Path
+from sqlalchemy import text
+
 from src.ingestion.call_procedure import call_procedure
-from unittest.mock import MagicMock
 
-@pytest.fixture
-def mock_procedure_name():
-    return "test"
-
-@pytest.fixture
-def mock_procedure_parameters():
-    return {"username": "user1", "password" : 1234}
-
-@pytest.fixture
-def mock_connection():
-
+@patch("src.ingestion.call_procedure.get_engine")
+@patch("src.ingestion.call_procedure.execute_sql_file")
+def test_call_procedure_with_default_engine(mock_execute_sql, mock_get_engine):
     mock_engine = MagicMock()
-    mock_connection = MagicMock()
+    mock_get_engine.return_value = mock_engine
 
-    mock_connection.__enter__.return_value= mock_connection
-    mock_connection.__exit__.return_value = None
+    mock_conn = MagicMock()
+    mock_engine.begin.return_value.__enter__.return_value = mock_conn
 
-    mock_engine.begin.return_value.__enter__.return_value = mock_connection
-    mock_engine.begin.return_value.__exit__.return_value = None
+    call_procedure(engine=None)
+    mock_get_engine.assert_called_once()
+    mock_execute_sql.assert_called_once()
+    sql_path = mock_execute_sql.call_args[0][1]
+    assert sql_path.name == "transfer_stage_to_core.sql"
 
-    return mock_engine, mock_connection
-
-# Test procedure call with only engine passed to function.
-def test_call_procedure_no_parameters(mock_connection):
-
-    engine, connection = mock_connection
-    call_procedure(engine=engine)
-
-    connection.execute.assert_called_once()
-    executed_call = str(connection.execute.call_args[0][0])
-
-    assert "CALL transfer_uber_data();" in executed_call
-
-# Test procedure call with engine and named procedure.
-def test_call_procedure_with_procedure_name_no_parameters(mock_procedure_name, mock_connection):
-
-    engine, connection = mock_connection
-    call_procedure(engine=engine, procedure_name=mock_procedure_name, procedure_params=None)
-
-    connection.execute.assert_called_once()
-    executed_call = str(connection.execute.call_args[0][0])
-
-    assert f"CALL {mock_procedure_name}();" in executed_call
+    mock_conn.execute.assert_called_once()
+    called_stmt = mock_conn.execute.call_args[0][0]
+    assert str(called_stmt) == str(text("CALL transfer_stage_to_core();"))
 
 
-# Test procedure call with engine, named procedure, and list of procedure parameters.
-def test_call_procedure_with_procedure_name_and_parameters(mock_procedure_name, mock_procedure_parameters, mock_connection):
+@patch("src.ingestion.call_procedure.execute_sql_file")
+def test_call_procedure_with_passed_engine(mock_execute_sql):
+    mock_engine = MagicMock()
+    mock_conn = MagicMock()
+    mock_engine.begin.return_value.__enter__.return_value = mock_conn
 
-    engine, connection = mock_connection
-    call_procedure(engine=engine, procedure_name=mock_procedure_name, procedure_params=mock_procedure_parameters)
+    call_procedure(engine=mock_engine)
 
-    connection.execute.assert_called_once()
-    executed_call = str(connection.execute.call_args[0][0])
+    mock_execute_sql.assert_called_once()
+    mock_conn.execute.assert_called_once()
+    called_stmt = mock_conn.execute.call_args[0][0]
+    assert str(called_stmt) == str(text("CALL transfer_stage_to_core();"))
 
-    assert f"CALL {mock_procedure_name}(:username, :password);" in executed_call
 
+@patch("src.ingestion.call_procedure.get_engine")
+@patch("src.ingestion.call_procedure.execute_sql_file")
+def test_call_procedure_context_manager_called(mock_execute_sql, mock_get_engine):
+    mock_engine = MagicMock()
+    mock_get_engine.return_value = mock_engine
+    mock_conn = MagicMock()
+    mock_engine.begin.return_value.__enter__.return_value = mock_conn
+
+    call_procedure()
+    mock_engine.begin.assert_called_once()
+    mock_engine.begin.return_value.__enter__.assert_called_once()
+    mock_conn.execute.assert_called_once()
