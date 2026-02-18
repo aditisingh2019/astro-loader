@@ -10,7 +10,7 @@ from src.db.tables import (
     locations_table, vehicle_types_table,
     cancellation_reasons_table
 )
-from sqlalchemy import select, func, desc, join
+from sqlalchemy import select, func, desc, join, cast, Float
 import seaborn as sns
 
 logger = logging.getLogger(__name__)
@@ -22,10 +22,14 @@ def uber_analysis():
     try:
         with engine.begin() as connection:
 
+            clean_booking_value = cast(
+                func.nullif(bookings_table.c.booking_value, 'NaN'),
+                Float
+            )
             # Revenue analysis
 
             # Total revenue
-            query = select(func.sum(func.coalesce(bookings_table.c.booking_value, 0)))
+            query = select(func.coalesce(func.sum(clean_booking_value), 0))
             result = connection.execute(query).scalar()
             print(f"Total revenue for 2024: {result:.2f}")
 
@@ -33,7 +37,7 @@ def uber_analysis():
             query = select(
                             func.extract('month', bookings_table.c.booking_date).label("month"),
                             func.to_char(bookings_table.c.booking_date, 'FMMonth').label("month_name"),
-                            func.sum(func.coalesce(bookings_table.c.booking_value, 0)).label("revenue")
+                            func.coalesce(func.sum(clean_booking_value), 0).label("revenue")
                         ).group_by(
                             func.extract('month', bookings_table.c.booking_date),
                             func.to_char(bookings_table.c.booking_date, 'FMMonth')
@@ -50,7 +54,7 @@ def uber_analysis():
             plt.title("Total revenue by month")
             plt.xlabel("Month")
             plt.ylabel("Total Revenue (in millions of Rupees)")
-            plt.xticks(np.arange(0, 12, 1), labels=df['month_name'], rotation=45,  ha='right')
+            plt.xticks(rotation=45, ha='right')
             plt.show()
 
             print("")
@@ -58,7 +62,7 @@ def uber_analysis():
             # Total revenue contribution by vehicle type
             query = select(
                         vehicle_types_table.c.vehicle_type_name,
-                        func.sum(func.coalesce(bookings_table.c.booking_value, 0)).label("revenue")
+                        func.sum(func.coalesce(clean_booking_value)).label("revenue")
                     ).join(
                         bookings_table,
                         vehicle_types_table.c.vehicle_type_id == bookings_table.c.vehicle_type_id
@@ -75,7 +79,7 @@ def uber_analysis():
             # Total revenue contribution by pickup location (top 25)
             query = select(
                         locations_table.c.location_name,
-                        func.sum(func.coalesce(bookings_table.c.booking_value, 0)).label("revenue")
+                        func.sum(func.coalesce(clean_booking_value)).label("revenue")
                     ).join(
                         bookings_table,
                         locations_table.c.location_id == bookings_table.c.pickup_location_id
@@ -100,7 +104,7 @@ def uber_analysis():
                     ).group_by(booking_status_table.c.status_name)
                     
             df = pd.read_sql(query, con=connection)
-            df = df.set_index('status')
+            df = df.set_index('status_name')
             df.plot.pie(autopct='%1.1f%%', labels=None, subplots=True)
             plt.legend(title="Booking Status", labels=df.index)
             plt.show()
@@ -116,7 +120,7 @@ def uber_analysis():
             print(f"Total number of cancellations: {total_cancellations}")
             
             # Estimated cost of cancellations (average ride cost)
-            query = select(func.avg(func.coalesce(bookings_table.c.booking_value, 0)))
+            query = select(func.avg(func.coalesce(clean_booking_value)))
             avg_cost_per_ride = connection.execute(query).scalar()
             print(f"Estimated lost revenue from cancellations: {(total_cancellations * avg_cost_per_ride):.2f}")
 
@@ -126,40 +130,57 @@ def uber_analysis():
             print(f"Total incomplete rides: {total_incomplete_rides}")
 
             # Total cost of incomplete rides
-            query = select(func.sum(bookings_table.c.booking_value)).join(
-                    incomplete_rides_table,
-                    bookings_table.c.booking_id == incomplete_rides_table.c.booking_id
-                )
+            query = select(
+                func.coalesce(func.sum(clean_booking_value), 0)
+            ).join(
+                incomplete_rides_table,
+                bookings_table.c.booking_id == incomplete_rides_table.c.booking_id
+            )
             total_cost = connection.execute(query).scalar()
             print(f"Total cost of incomplete rides {total_cost:.2f}")
 
+
             # Customer cancellations by reason
             query = select(
-                        cancellation_reasons_table.c.reason_description
-                    ).join(
-                        customer_cancellations_table,
-                        cancellation_reasons_table.c.reason_id == customer_cancellations_table.c.reason_id
-                    )
+                cancellation_reasons_table.c.reason_description,
+                func.count(customer_cancellations_table.c.booking_id).label("count")
+            ).join(
+                customer_cancellations_table,
+                cancellation_reasons_table.c.reason_id == customer_cancellations_table.c.reason_id
+            ).group_by(
+                cancellation_reasons_table.c.reason_description
+            )
             df = pd.read_sql(query, con=connection)
-            df = df.groupby('cancellation_reason')['cancellation_reason'].count()
-            df.plot.pie(autopct='%1.1f%%', labels=None)
-            plt.title("Customer ride cancellations")
-            plt.legend(title="Reason for cancellation", labels=df.index)
+
+            # Plot
+            fig, ax = plt.subplots(figsize=(7,7))
+            ax.pie(df['count'], labels=df['reason_description'], autopct='%1.1f%%', startangle=90)
+            ax.set_title("Customer ride cancellations")
+            ax.axis('equal')
+            plt.tight_layout()
             plt.show()
+
 
             # Driver cancellations by reason
             query = select(
-                        cancellation_reasons_table.c.reason_description
-                    ).join(
-                        driver_cancellations_table,
-                        cancellation_reasons_table.c.reason_id == driver_cancellations_table.c.reason_id
-                    )
+                cancellation_reasons_table.c.reason_description,
+                func.count(driver_cancellations_table.c.booking_id).label("count")
+            ).join(
+                driver_cancellations_table,
+                cancellation_reasons_table.c.reason_id == driver_cancellations_table.c.reason_id
+            ).group_by(
+                cancellation_reasons_table.c.reason_description
+            )
             df = pd.read_sql(query, con=connection)
-            df = df.groupby('cancellation_reason')['cancellation_reason'].count()
-            df.plot.pie(autopct='%1.1f%%', labels=None)
-            plt.title("Driver ride cancellations")
-            plt.legend(title="Reason for cancellation", labels=df.index)
+
+            # Plot
+            fig, ax = plt.subplots(figsize=(7,7))
+            ax.pie(df['count'], labels=df['reason_description'], autopct='%1.1f%%', startangle=90)
+            ax.set_title("Driver ride cancellations")
+            ax.axis('equal')
+            plt.tight_layout()
             plt.show()
+
 
             # Is there a correlation between location and cancelled rides?
 
@@ -235,3 +256,6 @@ def uber_analysis():
     except Exception as e:
         logger.exception("Failed to query database for analysis.")
         raise
+
+if __name__ == "__main__":
+    uber_analysis()
