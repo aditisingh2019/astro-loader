@@ -118,7 +118,7 @@ def run_pipeline(
         logger.critical("Test for SMTPHandler.")
 
     except Exception as e:
-        logger.exception("Pipeline execution failed.")
+        logger.critical("Pipeline execution failed.")
         raise
 
     finally:
