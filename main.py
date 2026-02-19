@@ -31,6 +31,7 @@ setup_database()
 from src.utils.logger import setup_logger
 from src.ingestion.pipeline import run_pipeline
 from src.db.connection import get_engine
+from analysis.runner import run_all_analyses
 
 
 # Exit codes
@@ -45,7 +46,6 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument(
         "--file",
-        required=True,
         help="Path to input data file"
     )
 
@@ -55,6 +55,12 @@ def parse_args() -> argparse.Namespace:
         default=10000,
         help="Chunk size for processing large files (default=10000)"
     )
+
+    parser.add_argument(
+    "--analyze",
+    action="store_true",
+    help="Run analytics after ingestion"
+)
 
     return parser.parse_args()
 
@@ -73,13 +79,18 @@ def main() -> int:
         logger.info(f"Input file: {args.file}")
         logger.info(f"Chunksize: {args.chunksize}")
 
-        run_pipeline(
-            filename=args.file,
-            chunksize=args.chunksize,
-            engine=engine
-        )
+        if args.file:
+            run_pipeline(
+                filename=args.file,
+                chunksize=args.chunksize,
+                engine=engine
+            )
 
         logger.info("Ingestion completed successfully.")
+
+        if args.analyze:
+            run_all_analyses(engine)
+
         return EXIT_SUCCESS
 
     except Exception:

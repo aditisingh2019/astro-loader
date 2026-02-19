@@ -49,13 +49,7 @@ CREATE TABLE IF NOT EXISTS incomplete_reasons (
 
 
 CREATE TABLE IF NOT EXISTS customers (
-    customer_id     VARCHAR(20) PRIMARY KEY,
-    customer_rating DECIMAL(3,2)
-);
-
-CREATE TABLE IF NOT EXISTS drivers (
-    driver_id     INTEGER PRIMARY KEY,
-    driver_rating DECIMAL(3,2)
+    customer_id     VARCHAR(20) PRIMARY KEY
 );
 
 
@@ -66,7 +60,6 @@ CREATE TABLE IF NOT EXISTS bookings (
 
     status_id INTEGER REFERENCES booking_statuses(status_id),
     customer_id VARCHAR(20) REFERENCES customers(customer_id),
-    driver_id INTEGER REFERENCES drivers(driver_id),
     vehicle_type_id INTEGER REFERENCES vehicle_types(vehicle_type_id),
 
     pickup_location_id INTEGER REFERENCES locations(location_id),
@@ -77,18 +70,15 @@ CREATE TABLE IF NOT EXISTS bookings (
     booking_value DECIMAL(10,2),
     ride_distance DECIMAL(6,2),
 
+    driver_rating DECIMAL(3,2),
     customer_rating DECIMAL(3,2),
     payment_method_id INTEGER REFERENCES payment_methods(payment_method_id)
 );
 
 
-CREATE TABLE IF NOT EXISTS customer_cancellations (
+CREATE TABLE IF NOT EXISTS cancellations (
     booking_id VARCHAR(20) PRIMARY KEY REFERENCES bookings(booking_id),
-    reason_id INTEGER REFERENCES cancellation_reasons(reason_id)
-);
-
-CREATE TABLE IF NOT EXISTS driver_cancellations (
-    booking_id VARCHAR(20) PRIMARY KEY REFERENCES bookings(booking_id),
+    cancelled_by VARCHAR(20) NOT NULL CHECK (cancelled_by IN ('CUSTOMER', 'DRIVER')),
     reason_id INTEGER REFERENCES cancellation_reasons(reason_id)
 );
 

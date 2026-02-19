@@ -7,31 +7,30 @@ Responsibilities:
 -----------------
 - Normalize column names.
 - Standardize data formats (dates, strings, numbers).
-- Handle missing values where appropriate.
+- Handle missing values safely.
+- Keep transformations deterministic and reversible.
 
 Important Behavior:
 -------------------
 - Only operates on valid records.
 - Should not introduce new invalid states.
-- Keeps transformations predictable and reversible.
-
-Design Notes:
--------------
-- Focused on light transformations, not business logic.
-- Designed to be composable and testable.
+- Does NOT apply business logic.
 """
 
 from __future__ import annotations
 
 import logging
 import pandas as pd
-import numpy as np
 from typing import Dict
 
 logger = logging.getLogger(__name__)
 
 
+# =====================================================
 # Column Normalization
+# Must match stg_rides schema exactly
+# =====================================================
+
 COLUMN_RENAME_MAP: Dict[str, str] = {
     "Booking ID": "booking_id",
     "Customer ID": "customer_id",
@@ -41,14 +40,14 @@ COLUMN_RENAME_MAP: Dict[str, str] = {
     "Booking Status": "booking_status",
     "Booking Value": "booking_value",
     "Ride Distance": "ride_distance",
-    "Driver Ratings": "driver_rating",
+    "Driver Ratings": "driver_ratings",
     "Customer Rating": "customer_rating",
-    "Cancelled Rides by Customer": "cancelled_by_customer",
-    "Reason for cancelling by Customer": "cancellation_reason_by_customer",
-    "Cancelled Rides by Driver": "cancelled_by_driver",
-    "Driver Cancellation Reason": "cancellation_reason_by_driver",
-    "Incomplete Rides": "incomplete_ride",
-    "Incomplete Rides Reason": "incomplete_ride_reason",
+    "Cancelled Rides by Customer": "cancelled_rides_by_customer",
+    "Reason for Cancelling by Customer": "reason_for_cancelling_by_customer",
+    "Cancelled Rides by Driver": "cancelled_rides_by_driver",
+    "Driver Cancellation Reason": "driver_cancellation_reason",
+    "Incomplete Rides": "incomplete_rides",
+    "Incomplete Rides Reason": "incomplete_rides_reason",
     "Avg VTAT": "avg_vtat",
     "Avg CTAT": "avg_ctat",
     "Payment Method": "payment_method",
@@ -57,10 +56,11 @@ COLUMN_RENAME_MAP: Dict[str, str] = {
 }
 
 
-# Apply deterministic, reversible cleaning transformations.
-def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
-    
+# =====================================================
+# Public Cleaning Function
+# =====================================================
 
+def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
     logger.info("Starting cleaning process.")
 
@@ -79,16 +79,18 @@ def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-
+# =====================================================
 # Cleaning Steps
+# =====================================================
+
 def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
     logger.info("Normalizing column names to snake_case.")
-    df = df.rename(columns=COLUMN_RENAME_MAP)
-    return df
+    return df.rename(columns=COLUMN_RENAME_MAP)
 
 
 def _strip_whitespace(df: pd.DataFrame) -> pd.DataFrame:
-    logger.info("Stripping leading/trailing whitespace from string columns.")
+    logger.info("Stripping whitespace from string columns.")
+
     str_cols = df.select_dtypes(include=["object", "string"]).columns
 
     for col in str_cols:
@@ -106,6 +108,7 @@ def _standardize_ids(df: pd.DataFrame) -> pd.DataFrame:
         if col in df.columns:
             df[col] = (
                 df[col]
+                .astype(str)
                 .str.replace('"', '', regex=False)
                 .str.strip()
             )
@@ -114,12 +117,12 @@ def _standardize_ids(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _convert_numeric_types(df: pd.DataFrame) -> pd.DataFrame:
-    logger.info("Converting numeric columns to appropriate types.")
+    logger.info("Converting numeric columns.")
 
     numeric_columns = [
         "booking_value",
         "ride_distance",
-        "driver_rating",
+        "driver_ratings",
         "customer_rating",
         "avg_vtat",
         "avg_ctat",
@@ -133,18 +136,21 @@ def _convert_numeric_types(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _convert_binary_flags(df: pd.DataFrame) -> pd.DataFrame:
-    logger.info("Converting cancellation/incomplete flags to integers.")
+    logger.info("Converting cancellation/incomplete flags to integers (0/1).")
 
     flag_columns = [
-        "cancelled_by_customer",
-        "cancelled_by_driver",
-        "incomplete_ride",
+        "cancelled_rides_by_customer",
+        "cancelled_rides_by_driver",
+        "incomplete_rides",
     ]
 
     for col in flag_columns:
         if col in df.columns:
-            df[col] = df[col].fillna(0)
-            df[col] = df[col].astype(int)
+            df[col] = (
+                pd.to_numeric(df[col], errors="coerce")
+                .fillna(0)
+                .astype(int)
+            )
 
     return df
 
@@ -166,19 +172,12 @@ def _convert_datetime(df: pd.DataFrame) -> pd.DataFrame:
             errors="coerce"
         ).dt.time
 
-    # Create combined timestamp
-    if "booking_date" in df.columns and "booking_time" in df.columns:
-        logger.info("Creating ride_timestamp column.")
-        df["ride_timestamp"] = pd.to_datetime(
-            df["booking_date"].astype(str) + " " + df["booking_time"].astype(str),
-            errors="coerce"
-        )
-
     return df
 
 
+
 def _standardize_categoricals(df: pd.DataFrame) -> pd.DataFrame:
-    logger.info("Standardizing categorical columns.")
+    logger.info("Standardizing categorical text fields.")
 
     categorical_columns = [
         "vehicle_type",
@@ -186,16 +185,18 @@ def _standardize_categoricals(df: pd.DataFrame) -> pd.DataFrame:
         "drop_location",
         "booking_status",
         "payment_method",
-        "cancellation_reason_by_customer",
-        "cancellation_reason_by_driver",
-        "incomplete_ride_reason"
+        "reason_for_cancelling_by_customer",
+        "driver_cancellation_reason",
+        "incomplete_rides_reason"
     ]
 
     for col in categorical_columns:
         if col in df.columns:
             df[col] = (
                 df[col]
+                .astype(str)
                 .str.strip()
+                .replace("nan", pd.NA)
                 .str.title()
             )
 

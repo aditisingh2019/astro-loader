@@ -5,6 +5,7 @@ import datetime as dt
 
 from src.ingestion.cleaner import clean_dataframe
 
+
 def make_raw_dataframe():
     return pd.DataFrame({
         "Booking ID": [' "123" '],
@@ -34,36 +35,41 @@ def test_full_cleaning_pipeline_transforms_correctly():
 
     cleaned = clean_dataframe(df)
 
+    # input is not mutated
     pd.testing.assert_frame_equal(df, original)
 
+    # renamed columns
     assert "booking_id" in cleaned.columns
     assert "customer_id" in cleaned.columns
-    assert "ride_date" in cleaned.columns
-    assert "ride_time" in cleaned.columns
+    assert "booking_date" in cleaned.columns
+    assert "booking_time" in cleaned.columns
 
+    # ID cleanup
     assert cleaned.loc[0, "booking_id"] == "123"
     assert cleaned.loc[0, "customer_id"] == "456"
 
-    assert isinstance(cleaned.loc[0, "booking_value"], float)
+    # numeric coercion
     assert cleaned.loc[0, "booking_value"] == 100.5
+    assert isinstance(cleaned.loc[0, "booking_value"], float)
     assert np.isnan(cleaned.loc[0, "customer_rating"])
 
-    assert isinstance(cleaned.loc[0, "ride_date"], dt.date)
-    assert cleaned.loc[0, "ride_date"] == dt.date(2024, 1, 1)
+    # datetime coercion
+    assert isinstance(cleaned.loc[0, "booking_date"], dt.date)
+    assert cleaned.loc[0, "booking_date"] == dt.date(2024, 1, 1)
 
-    assert isinstance(cleaned.loc[0, "ride_time"], dt.time)
-    assert cleaned.loc[0, "ride_time"] == dt.time(10, 30, 0)
+    assert isinstance(cleaned.loc[0, "booking_time"], dt.time)
+    assert cleaned.loc[0, "booking_time"] == dt.time(10, 30, 0)
 
-    assert "ride_timestamp" in cleaned.columns
-    assert isinstance(cleaned.loc[0, "ride_timestamp"], pd.Timestamp)
-
+    # categoricals standardized
     assert cleaned.loc[0, "vehicle_type"] == "Sedan"
     assert cleaned.loc[0, "booking_status"] == "Completed"
     assert cleaned.loc[0, "payment_method"] == "Cash"
 
-    assert cleaned.loc[0, "cancelled_by_customer"] == 0
-    assert cleaned.loc[0, "cancelled_by_driver"] == 1
-    assert cleaned.loc[0, "incomplete_ride"] == 0
+    # binary flags
+    assert cleaned.loc[0, "cancelled_rides_by_customer"] == 0
+    assert cleaned.loc[0, "cancelled_rides_by_driver"] == 1
+    assert cleaned.loc[0, "incomplete_rides"] == 0
+
 
 def test_missing_optional_columns_do_not_break_cleaning():
     df = pd.DataFrame({
@@ -76,10 +82,11 @@ def test_missing_optional_columns_do_not_break_cleaning():
     cleaned = clean_dataframe(df)
 
     assert "booking_id" in cleaned.columns
-    assert "ride_timestamp" in cleaned.columns
+    assert "booking_date" in cleaned.columns
+    assert "booking_time" in cleaned.columns
 
 
-def test_invalid_datetime_values_coerce_to_nan():
+def test_invalid_datetime_values_coerce_to_null():
     df = pd.DataFrame({
         "Booking ID": ["1"],
         "Customer ID": ["2"],
@@ -89,9 +96,8 @@ def test_invalid_datetime_values_coerce_to_nan():
 
     cleaned = clean_dataframe(df)
 
-    assert pd.isna(cleaned.loc[0, "ride_date"])
-    assert pd.isna(cleaned.loc[0, "ride_time"])
-    assert pd.isna(cleaned.loc[0, "ride_timestamp"])
+    assert pd.isna(cleaned.loc[0, "booking_date"])
+    assert pd.isna(cleaned.loc[0, "booking_time"])
 
 
 def test_strip_whitespace_applies_to_all_object_columns():
@@ -131,19 +137,7 @@ def test_binary_flags_fillna_and_cast_to_int():
 
     cleaned = clean_dataframe(df)
 
-    assert cleaned.loc[0, "cancelled_by_customer"] == 0
-    assert cleaned.loc[0, "cancelled_by_driver"] == 0
-    assert cleaned.loc[0, "incomplete_ride"] == 0
-    assert cleaned["cancelled_by_customer"].dtype == int
-
-
-def test_timestamp_not_created_if_date_or_time_missing():
-    df = pd.DataFrame({
-        "Booking ID": ["1"],
-        "Customer ID": ["2"],
-        "Date": ["2024-01-01"],
-    })
-
-    cleaned = clean_dataframe(df)
-
-    assert "ride_timestamp" not in cleaned.columns
+    assert cleaned.loc[0, "cancelled_rides_by_customer"] == 0
+    assert cleaned.loc[0, "cancelled_rides_by_driver"] == 0
+    assert cleaned.loc[0, "incomplete_rides"] == 0
+    assert cleaned["cancelled_rides_by_customer"].dtype == int

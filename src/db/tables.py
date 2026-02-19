@@ -42,10 +42,8 @@ cancellation_reasons_table = Table("cancellation_reasons", metadata, autoload_wi
 incomplete_reasons_table = Table("incomplete_reasons", metadata, autoload_with=engine)
 
 customers_table = Table("customers", metadata, autoload_with=engine)
-drivers_table = Table("drivers", metadata, autoload_with=engine)
 
 bookings_table = Table("bookings", metadata, autoload_with=engine)
 
-customer_cancellations_table = Table("customer_cancellations", metadata, autoload_with=engine)
-driver_cancellations_table = Table("driver_cancellations", metadata, autoload_with=engine)
+cancellations_table = Table("cancellations", metadata, autoload_with=engine)
 incomplete_rides_table = Table("incomplete_rides", metadata, autoload_with=engine)

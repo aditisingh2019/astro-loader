@@ -61,28 +61,38 @@ CREATE TABLE IF NOT EXISTS stg_rejects (
 
 
 CREATE TABLE IF NOT EXISTS stg_rides (
-    booking_id VARCHAR(20),
+    
     booking_date DATE,
     booking_time TIME,
 
-    booking_status TEXT,
+    booking_id VARCHAR(50),
+    booking_status VARCHAR(50),
+    
     customer_id VARCHAR(20),
-    driver_id INTEGER,
-    vehicle_type TEXT,
+    vehicle_type VARCHAR(50),
 
-    pickup_location TEXT,
-    drop_location TEXT,
+    pickup_location VARCHAR(255),
+    drop_location VARCHAR(255),
 
-    avg_vtat DECIMAL(6,2),
-    avg_ctat DECIMAL(6,2),
-    booking_value DECIMAL(10,2),
-    ride_distance DECIMAL(6,2),
+    avg_vtat NUMERIC(10,2),
+    avg_ctat NUMERIC(10,2),
 
-    customer_rating DECIMAL(3,2),
-    payment_method TEXT,
+    cancelled_rides_by_customer NUMERIC(10,2),
+    reason_for_cancelling_by_customer TEXT,
 
-    cancellation_reason TEXT,
-    incomplete_reason TEXT,
+    cancelled_rides_by_driver NUMERIC(10,2),
+    driver_cancellation_reason TEXT,
+
+    incomplete_rides NUMERIC(10,2),
+    incomplete_rides_reason TEXT,
+
+    booking_value NUMERIC(12,2),
+    ride_distance NUMERIC(10,2),
+
+    driver_ratings NUMERIC(3,2),
+    customer_rating NUMERIC(3,2),
+
+    payment_method VARCHAR(50),
 
     ingestion_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
