@@ -5,6 +5,7 @@ Overview
 --------
 
 This project implements a high-performance data ingestion system for Uber ride booking data. It reads CSV files from a local source, validates data against structural and business rules, cleans and standardizes values, deduplicates records, and loads them into PostgreSQL for analytics.
+
 [Presentation Slides](https://docs.google.com/presentation/d/1zCSXnDkacx8H2J9dEToJHwzaauqGuUtj8pnMUFuNNxk/edit?usp=sharing)
 
 The system is production-ready with:
@@ -374,7 +375,6 @@ Future Improvements
 - [ ] Incremental loading (INSERT vs. UPSERT based on record age)
 - [ ] Data quality metrics dashboard (reject rate, duplication rate)
 - [ ] Airflow/dbt integration for workflow orchestration
-- [ ] Docker Compose for local PostgreSQL development
 - [ ] Monitoring & alerting (DataDog, CloudWatch)
 - [ ] Schema versioning for backward compatibility
 - [ ] Multi-source federation (combine data from multiple CSV sources)
@@ -392,7 +392,7 @@ When adding new data sources or validation rules:
 Final Notes
 -----------
 
-This project demonstrates a production-grade ingestion system that balances speed (PostgreSQL COPY), correctness (comprehensive validation), and maintainability (100% test coverage).
+This project demonstrates a production-grade ingestion system that balances speed (PostgreSQL COPY), correctness (comprehensive validation), and maintainability (80% test coverage).
 
 The modular design allows teams to:
 - Extend to new data sources without touching core logic
