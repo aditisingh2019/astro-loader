@@ -5,6 +5,7 @@ Overview
 --------
 
 This project implements a high-performance data ingestion system for Uber ride booking data. It reads CSV files from a local source, validates data against structural and business rules, cleans and standardizes values, deduplicates records, and loads them into PostgreSQL for analytics.
+[Presentation Slides](https://docs.google.com/presentation/d/1zCSXnDkacx8H2J9dEToJHwzaauqGuUtj8pnMUFuNNxk/edit?usp=sharing)
 
 The system is production-ready with:
 - 80% test coverage
