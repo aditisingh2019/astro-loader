@@ -72,6 +72,36 @@ services:
     profiles:
       - analytics
 
+  # Streamlit Dashboard (optional)
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: uber-rides-streamlit
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME:-uber_rides_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_ENV: ${APP_ENV:-dev}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_ADDRESS: ${EMAIL_ADDRESS}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      EMAIL_RECIPIENT: ${EMAIL_RECIPIENT}
+    volumes:
+      - ./:/app
+      - ./logs:/app/logs
+    networks:
+      - uber-network
+    ports:
+      - "8501:8501"
+    entrypoint: ["streamlit", "run", "streamlit_app.py", "--server.port", "8501", "--server.address", "0.0.0.0"]
+    restart: unless-stopped
+    profiles:
+      - dashboard
+
   # pgAdmin for database management
   pgadmin:
     image: dpage/pgadmin4:latest

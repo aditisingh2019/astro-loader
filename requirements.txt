@@ -1,8 +1,9 @@
 # Data Processing
-pandas==3.0.0
+pandas==2.2.3
 numpy==1.26.4
 seaborn==0.13.2
 matplotlib==3.9.2
+streamlit==1.54.0
 
 # Database Connectivity
 sqlalchemy==2.0.23

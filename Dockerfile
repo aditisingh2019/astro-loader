@@ -11,8 +11,17 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
     gcc \
     postgresql-client \
+    zlib1g-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libpng-dev \
+    liblcms2-dev \
+    libwebp-dev \
+    libopenjp2-7-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first (for better caching)
