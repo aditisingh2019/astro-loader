@@ -94,7 +94,7 @@ uber-rides/
 ├── main.py                      # Entry point (CLI: --file, --chunksize)
 
 ├── config/
-│   └── config.yaml              # Configuration (currently unused)
+│   └── config.yaml              # Configuration
 
 ├── src/
 │   ├── db/
