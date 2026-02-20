@@ -5,6 +5,7 @@ seaborn==0.13.2
 matplotlib==3.9.2
 
 # Database Connectivity
+sqlalchemy==2.0.23
 psycopg2-binary==2.9.9
 
 # Configuration Management

@@ -1,0 +1,98 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: uber-rides-db
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-uber_rides_db}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - uber-network
+
+  # Python Application - Ingestion
+  ingestion:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: uber-rides-ingestion
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME:-uber_rides_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_ENV: ${APP_ENV:-dev}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_ADDRESS: ${EMAIL_ADDRESS}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      EMAIL_RECIPIENT: ${EMAIL_RECIPIENT}
+    volumes:
+      # Mount data directory for CSV ingestion
+      - ./data:/app/data
+      # Mount logs directory
+      - ./logs:/app/logs
+    networks:
+      - uber-network
+    entrypoint: ["/app/docker/entrypoint.sh"]
+    command: ["ingest"]
+    restart: unless-stopped
+
+  # Python Application - Analytics
+  analytics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: uber-rides-analytics
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME:-uber_rides_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_ENV: ${APP_ENV:-dev}
+    volumes:
+      - ./logs:/app/logs
+      - ./analysis_output:/app/analysis_output
+    networks:
+      - uber-network
+    entrypoint: ["/app/docker/entrypoint.sh"]
+    command: ["analyze"]
+    restart: unless-stopped
+    profiles:
+      - analytics
+
+  # pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: uber-rides-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - uber-network
+    profiles:
+      - admin
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  uber-network:
+    driver: bridge

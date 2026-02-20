@@ -1,23 +1,25 @@
 """
 Purpose:
 --------
-Application entry point for the data ingestion subsystem.
+Application entry point for data ingestion and analytics pipeline.
 
 Responsibilities:
 -----------------
-- Load configuration.
-- Initialize logging.
-- Trigger pipeline execution.
+- Initialize database and logging
+- Parse command-line arguments
+- Trigger pipeline execution (ingestion)
+- Optionally run analytical suite
 
 Important Behavior:
 -------------------
-- Minimal logic by design.
-- Exits with meaningful status codes.
-- Suitable for CLI or scheduled execution.
+- Minimal logic by design
+- Exits with meaningful status codes
+- Suitable for CLI or scheduled execution
 
 Design Notes:
 -------------
-- Keeps runtime concerns separate from pipeline logic.
+- Keeps runtime concerns separate from data logic
+- Ingestion and analysis are independent operations
 """
 
 from __future__ import annotations
