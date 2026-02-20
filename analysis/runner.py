@@ -4,7 +4,7 @@ from sqlalchemy.engine import Engine
 from analysis.revenue import run_revenue_analysis
 from analysis.cancellations import run_cancellation_analysis
 from analysis.correlations import run_correlation_analysis
-from analysis.bookings import run_booking_analysis
+from analysis.bookings import run_booking_status_analysis, run_distance_bucket_analysis
 
 logger = logging.getLogger(__name__)
 

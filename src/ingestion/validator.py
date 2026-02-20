@@ -1,20 +1,9 @@
 """
-Purpose:
---------
 Validate incoming data against structural and business rules.
-
-Responsibilities:
------------------
 - Verify required columns exist.
 - Validate data types and null constraints.
 - Identify invalid records without stopping the pipeline.
 - Ensure cancellation and incomplete event consistency.
-
-Important Behavior:
--------------------
-- Splits data into valid and rejected records.
-- Adds a rejection reason to invalid records.
-- Does not mutate valid data values.
 """
 
 from __future__ import annotations
@@ -26,10 +15,7 @@ from typing import Tuple, Dict, List, Any
 logger = logging.getLogger(__name__)
 
 
-# ==============================
 # Validation Configuration
-# ==============================
-
 VALIDATION_CONFIG: Dict[str, Any] = {
     "required_columns": [
         "Booking ID",
@@ -53,14 +39,8 @@ VALIDATION_CONFIG: Dict[str, Any] = {
 }
 
 
-# ==============================
 # Main Validation Entry
-# ==============================
-
 def validate_dataframe(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
-
-    logger.info("Starting validation process.")
-    df = df.copy()
 
     _validate_required_columns(df)
 
@@ -88,18 +68,10 @@ def validate_dataframe(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
             lambda idx: "; ".join(reject_reasons.get(idx, []))
         )
 
-    logger.info(
-        f"Validation complete. "
-        f"Valid rows: {len(valid_df)}, Rejected rows: {len(reject_df)}"
-    )
-
     return valid_df, reject_df
 
 
-# ==============================
 # Structural Validation
-# ==============================
-
 def _validate_required_columns(df: pd.DataFrame) -> None:
     required = VALIDATION_CONFIG["required_columns"]
     missing = [col for col in required if col not in df.columns]
@@ -108,13 +80,8 @@ def _validate_required_columns(df: pd.DataFrame) -> None:
         logger.error(f"Missing required columns: {missing}")
         raise ValueError(f"Missing required columns: {missing}")
 
-    logger.info("All required columns present.")
 
-
-# ==============================
 # Row-Level Validation Rules
-# ==============================
-
 def _validate_required_not_null(df: pd.DataFrame):
     mask = pd.Series(False, index=df.index)
     reasons = {}
@@ -197,10 +164,7 @@ def _validate_non_negative_values(df: pd.DataFrame):
     return mask, reasons
 
 
-# ==============================
 # Event Consistency Validation
-# ==============================
-
 def _validate_event_consistency(df: pd.DataFrame):
     mask = pd.Series(False, index=df.index)
     reasons = {}
@@ -233,14 +197,14 @@ def _validate_event_consistency(df: pd.DataFrame):
             and inc_flag.loc[idx] == 1
         )
 
-        # ---- Dual cancellation ----
+        # Dual cancellation
         if customer_cancel and driver_cancel:
             reasons.setdefault(idx, []).append(
                 "Both customer and driver cancellation flags set"
             )
             mask.loc[idx] = True
 
-        # ---- Reason without flag ----
+        # Reason without flag
         if (
             not customer_cancel
             and cust_reason is not None
@@ -263,7 +227,7 @@ def _validate_event_consistency(df: pd.DataFrame):
             )
             mask.loc[idx] = True
 
-        # ---- Mutually exclusive ----
+        # Mutually exclusive
         if (customer_cancel or driver_cancel) and incomplete:
             reasons.setdefault(idx, []).append(
                 "Ride cannot be both cancelled and incomplete"

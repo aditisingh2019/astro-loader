@@ -1,24 +1,8 @@
 """
-Purpose:
---------
 Orchestrate the end-to-end data ingestion workflow.
-
-Responsibilities:
------------------
 - Coordinate reading, validation, transformation, deduplication, and loading.
 - Handle pipeline-level errors.
 - Emit summary logs for each run.
-
-Important Behavior:
--------------------
-- Executes steps in a strict, predictable order.
-- Ensures bad data does not block good data.
-- Serves as the future entry point for schedulers (Airflow).
-
-Design Notes:
--------------
-- Contains no business logic.
-- Optimized for readability and debuggability.
 """
 
 from __future__ import annotations
@@ -64,7 +48,6 @@ def run_pipeline(
 
         for chunk_number, chunk in enumerate(reader, start=1):
 
-            logger.info(f"Processing chunk {chunk_number} (rows={len(chunk)})")
             total_rows += len(chunk)
 
             # Validation
@@ -89,20 +72,13 @@ def run_pipeline(
                 valid_df=deduped_df,
                 reject_df=reject_df,
                 staging_table=stg_rides_table,
-                reject_table=stg_rejects_table
-            )
-
-            logger.info(
-                f"Chunk {chunk_number} complete | "
-                f"Valid: {len(deduped_df)} | "
-                f"Rejected: {len(reject_df)} | "
-                f"Deduplicated: {deduped_count}"
+                reject_table=stg_rejects_table,
+                batch_size=10000
             )
 
         
         # Transfer uploaded data from staging table to actual tables
         call_procedure(engine=engine)
-        logger.info("All chunks processed. Calling transfer procedure.")
         runtime = round(time.time() - start_time, 2)
 
         logger.info(

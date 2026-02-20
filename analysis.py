@@ -24,10 +24,7 @@ def uber_analysis():
     try:
         with engine.begin() as connection:
 
-            # --------------------------------------------------
             # Revenue Analysis
-            # --------------------------------------------------
-
             booking_value = cast(bookings_table.c.booking_value, Float)
             clean_booking_value = cast(
                 func.nullif(bookings_table.c.booking_value, 'NaN'),
@@ -64,10 +61,7 @@ def uber_analysis():
             plt.xticks(range(12), labels=df['month_name'], rotation=45,  ha='right')
             plt.show()
 
-            # --------------------------------------------------
             # Revenue by Vehicle Type
-            # --------------------------------------------------
-
             query = (
                 select(
                     vehicle_types_table.c.vehicle_type_name,
@@ -87,10 +81,7 @@ def uber_analysis():
             for vehicle, revenue in result:
                 print(f"{vehicle}: {revenue:.2f}")
 
-            # --------------------------------------------------
             # Revenue by Pickup Location (Top 25)
-            # --------------------------------------------------
-
             query = (
                 select(
                     locations_table.c.location_name,
@@ -111,10 +102,7 @@ def uber_analysis():
             for location, revenue in result:
                 print(f"{location}: {revenue:.2f}")
 
-            # --------------------------------------------------
             # Booking Status Distribution
-            # --------------------------------------------------
-
             query = (
                 select(
                     booking_status_table.c.status_name,
@@ -139,9 +127,8 @@ def uber_analysis():
             plt.tight_layout()
             plt.show()
 
-            # --------------------------------------------------
+
             # Cancellation Analysis
-            # --------------------------------------------------
 
             # Total cancellations
             query = select(func.count(cancellations_table.c.booking_id))
@@ -226,10 +213,7 @@ def uber_analysis():
                 plt.tight_layout()
                 plt.show()
 
-            # --------------------------------------------------
             # Incomplete Ride Analysis
-            # --------------------------------------------------
-
             query = select(func.count(incomplete_rides_table.c.booking_id))
             total_incomplete = connection.execute(query).scalar()
             print(f"\nTotal incomplete rides: {total_incomplete}")
@@ -245,11 +229,8 @@ def uber_analysis():
 
             incomplete_cost = connection.execute(query).scalar()
             print(f"Total cost of incomplete rides: {incomplete_cost:.2f}")
-
-            # --------------------------------------------------
+            
             # Correlation Analysis
-            # --------------------------------------------------
-
             numeric_cols = [
                 bookings_table.c.booking_value,
                 bookings_table.c.ride_distance,
@@ -271,10 +252,7 @@ def uber_analysis():
             plt.tight_layout()
             plt.show()
 
-            # --------------------------------------------------
             # Distance Buckets
-            # --------------------------------------------------
-
             bins = [0, 5, 10, 20, 50, 100, 500]
             labels = ["0-5", "5-10", "10-20", "20-50", "50-100", "100+"]
 
@@ -296,10 +274,7 @@ def uber_analysis():
             plt.tight_layout()
             plt.show()
 
-            # --------------------------------------------------
             # Correlation by Vehicle Type
-            # --------------------------------------------------
-
             query = (
                 select(
                     bookings_table.c.booking_value,

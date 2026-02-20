@@ -1,22 +1,7 @@
 """
-Purpose:
---------
 Provide a centralized location for table access.
-
-Responsibilities:
------------------
 - Loads tables from database using SQLAlchemy engine.
 - Allows for access to table information via SQLAlchemy MetaData object.
-
-Important Behavior:
--------------------
-- Using SQLAlchemy reflection ensures column names and datatype match the database.
-- Can utilize the MetaData object to create table in database, if needed.
-
-Design Notes:
--------------
-- Uses SQLAlchemy library to create MetaData instances that reflect the database tables.
-- Do not have to explicitly define the column name and datatype as that information is pulled from the database itself.
 """
 
 from src.db.connection import get_engine
